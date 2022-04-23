@@ -1,3 +1,8 @@
+/* 
+ * ASCII table used to initialize letters in efficient way, best idea I ever had
+ * Static shares memory for all instances of class, they can be modified.
+ * final doesn't let us modify.
+*/
 package wordle;
 
 import java.io.BufferedReader;
@@ -11,11 +16,12 @@ import java.util.Observable;
 import java.util.Random;
 
 /**
- *
+ * 
  * @author Ajmal
  */
 public class WModel extends Observable {
-    private final int MAX_GUESSES = 6;
+    
+    private final int MAX_GUESSES = 6; // do we need to have a getter for constants?
     public final int NO_STATE = -1, GREY_STATE = 0, GREEN_STATE = 1, YELLOW_STATE = 2;
     // Divide Alphabet into 4 categories according to line above
     private HashMap<Character,Integer> availableLetters; 
@@ -35,83 +41,45 @@ public class WModel extends Observable {
         allowOnlyWordListGuesses = true;
         showAnwser= true;
         selectRandomGuessWord = true;
+        playerHasWon = false;
+        
         targetWords = loadInFromFile("src/wordle/data/common.txt");
         guessWords = loadInFromFile("src/wordle/data/words.txt");
         availableLetters = new HashMap<>();
         answer = getRandomWord();
-        playerHasWon = false;
         initializeAvailableLetters();
         resetGuessColors();
     }
-    //======================================================= MODEL NEEDS TO UPDATE OBSERVERS! add 4 categories display of available words
-     private void initializeAvailableLetters() {
-        // Put a-z letters with NO_STATE in Hashmap
-        for(int asciiValue = 97; asciiValue <= 122; asciiValue++)
-            availableLetters.put((char)asciiValue,NO_STATE);
-    }
+    //======================================================= MODEL NEEDS TO UPDATE OBSERVERS! 
     
+        
     // Getter & Setters
     
-    public boolean allowOnlyWordListGuesses() {
-        return allowOnlyWordListGuesses;
-    }
-
-    public boolean showAnwser() {
-        return showAnwser;
-    }
-
-    public boolean selectRandomGuessWord() {
-        return selectRandomGuessWord;
-    }
-
-    public int getMAX_GUESSES() {
-        return MAX_GUESSES;
-    }
-    public int getNO_STATE() {
-        return NO_STATE;
-    }
-
-    public int getGREY_STATE() {
-        return GREY_STATE;
-    }
-
-    public int getGREEN_STATE() {
-        return GREEN_STATE;
-    }
-
-    public int getYELLOW_STATE() {
-        return YELLOW_STATE;
-    }
-
-    public String getAnswer() {
-        return answer;
-    }
-
-    public static boolean getPlayerHasWon() {
-        return playerHasWon;
-    }
-
+    public boolean allowOnlyWordListGuesses() {return allowOnlyWordListGuesses;}
+    public boolean showAnwser() {return showAnwser;}
+    public boolean selectRandomGuessWord() {return selectRandomGuessWord;}
+    public int getMAX_GUESSES() {return MAX_GUESSES;}
+    public int getNO_STATE() {return NO_STATE;}
+    public int getGREY_STATE() {return GREY_STATE;}
+    public int getGREEN_STATE() {return GREEN_STATE;}
+    public int getYELLOW_STATE() {return YELLOW_STATE;}
+    public String getAnswer() {return answer;}
+    public static boolean getPlayerHasWon() {return playerHasWon;}
     public static void setPlayerHasWon(boolean aPlayerHasWon) {
-        playerHasWon = aPlayerHasWon;
-    }
-    
+        playerHasWon = aPlayerHasWon;}
     public HashMap<Character,Integer> getAvailableLetters() {
-        return availableLetters;
-    }
-
-    public int getGuessStateColor(int index) {
-        return guessStateColors[index];
-    }
-
-    public void setGuessStateColor(int index, int value) {
-        this.guessStateColors[index] = value;
-    }
+        return availableLetters;}
+    public int getGuessStateColor(int index) {return guessStateColors[index];}
+    public void setGuessStateColor(int index, int state) {
+        assert state >= NO_STATE && state <= YELLOW_STATE:
+                "PreCon: Enter States from NO_STATE - YELLOW_STATE";
+        this.guessStateColors[index] = state;}
     
     
     // Methods
     
     public void resetGuessColors(){
-        Arrays.fill(guessStateColors,NO_STATE);   
+        Arrays.fill(guessStateColors, NO_STATE);   
     }
     
     public boolean isGuessInWordList(String guess){
@@ -120,31 +88,37 @@ public class WModel extends Observable {
     }
     
     public void colorLettersInGuess(String guess) {
-        for (int i=0; i < 5;i++){
+        for (int i = 0; i < 5; i++){
             char guessChar = guess.charAt(i);
             char answerChar = getAnswer().charAt(i);
-            if(guessChar==answerChar){
+            if (guessChar == answerChar){
                 guessStateColors[i] = GREEN_STATE;
-                availableLetters.replace(guessChar,GREEN_STATE);
+                availableLetters.replace(guessChar, GREEN_STATE);
             }
             else if (getAnswer().contains(Character.toString(guessChar))){
-                for(int j = 0; j < 5; j++){
-                    if(guessChar==getAnswer().charAt(j)&&guessStateColors[j]!=GREEN_STATE){
+                for (int j = 0; j < 5; j++){
+                    if (guessChar == getAnswer().charAt(j) && guessStateColors[j] != GREEN_STATE){
                         guessStateColors[i] = YELLOW_STATE;
-                        if(availableLetters.get(guessChar)!=GREEN_STATE)
-                            availableLetters.replace(guessChar,YELLOW_STATE);
+                        if (availableLetters.get(guessChar) != GREEN_STATE)
+                            availableLetters.replace(guessChar, YELLOW_STATE);
                     }
                 }
             }
-            else{
+            else {
                 guessStateColors[i] = GREY_STATE;
-                availableLetters.replace(guessChar,GREY_STATE);
+                availableLetters.replace(guessChar, GREY_STATE);
             }
         }
     }
     
+    private void initializeAvailableLetters() {
+        // Put a-z lower case letters with NO_STATE in Hashmap
+        for (int asciiValue = 97; asciiValue <= 122; asciiValue++)
+            availableLetters.put((char)asciiValue, NO_STATE);
+    }
+    
     private String getRandomWord(){
-        if(!selectRandomGuessWord())
+        if (!selectRandomGuessWord())
             return targetWords.get(0);
         String word;
         Random rand = new Random(); 
@@ -168,17 +142,13 @@ public class WModel extends Observable {
                 list.add(strLine);
             }
             reader.close();
-        } catch (Exception e) {
+        } 
+        catch (Exception e) {
             e.printStackTrace();  
         }
-       // do i need to check if arr is empty?
+        // do i need to check if arr is empty?
         return list;
     }
-
-
-
-    
-    
 
 
     

@@ -1,0 +1,12 @@
+        /* Is this overkill? As it uses more memory space? But its more scalable
+        HashMap<Integer, Color[]> mapColorsToStates = new HashMap<>();
+        mapColorsToStates.put(model.NO_STATE, new Color[]{Color.BLACK,Color.LIGHT_GRAY});
+        mapColorsToStates.put(model.GREY_STATE, new Color[]{Color.WHITE,Color.DARK_GRAY});
+        mapColorsToStates.put(model.GREEN_STATE, new Color[]{Color.WHITE,GREEN});
+        mapColorsToStates.put(model.YELLOW_STATE, new Color[]{Color.WHITE,YELLOW});
+        for (int Color_STATE : mapColorsToStates.keySet()) {
+            if(state == Color_STATE){
+                key.setForeground(mapColorsToStates.get(Color_STATE)[0]);
+                key.setBackground(mapColorsToStates.get(Color_STATE)[1]);
+            }
+        }*/

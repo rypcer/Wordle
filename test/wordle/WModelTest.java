@@ -13,17 +13,17 @@ import static org.junit.Assert.*;
  *
  * @author Ajmal
  */
-public class WLModelTest {
+public class WModelTest {
     
     
     static WModel model = new WModel();
-    public WLModelTest() {
+    public WModelTest() {
         
     }
 
     @Test
-    public void testGetRandomWord() {
-        assertNotNull(model.getRandomWord());
+    public void setGuessStateColor() {
+        model.setGuessStateColor(0,6);
     }
     @Test
     public void testIsGuessInWords_True(){
