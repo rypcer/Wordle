@@ -24,9 +24,11 @@ public class WModel extends Observable {
     private final int MAX_GUESSES = 6; // do we need to have a getter for constants?
     public final int NO_STATE = -1, GREY_STATE = 0, GREEN_STATE = 1, YELLOW_STATE = 2;
     public final int EMPTY_STATE = -2;
+    public final int GUESS_LENGTH = 5;
     // Divide Alphabet into 4 categories according to line above
-    private HashMap<Character,Integer> availableLetters; 
-    private int guessStateColors[] = new int[5];
+    private HashMap<Character,Integer> availableLetters;
+ 
+    private int guessStateColors[] = new int[GUESS_LENGTH];
     // 3 Flags
     private boolean allowOnlyWordListGuesses; 
     private boolean showAnwser;
@@ -37,12 +39,14 @@ public class WModel extends Observable {
     
     private String answer;
     private static boolean playerHasWon;
-    public String guess = new String(); // ADD IN CLI aswell
+    private static boolean isGuessSubmitted;
+    private String guess = new String(); // ADD IN CLI aswell
     public WModel(){
         allowOnlyWordListGuesses = true;
         showAnwser= true;
         selectRandomGuessWord = true;
         playerHasWon = false;
+        isGuessSubmitted = false;
         
         targetWords = loadInFromFile("src/wordle/data/common.txt");
         guessWords = loadInFromFile("src/wordle/data/words.txt");
@@ -75,7 +79,11 @@ public class WModel extends Observable {
         assert state >= NO_STATE && state <= YELLOW_STATE:
                 "PreCon: Enter States from NO_STATE - YELLOW_STATE";
         this.guessStateColors[index] = state;}
-    
+    public String getGuess() {return guess;}
+    public void setGuess(String guess) {this.guess = guess;}
+    public boolean isGuessSubmitted() {return isGuessSubmitted;}
+    public void setIsGuessSubmitted(boolean aIsGuessSubmitted) {
+        isGuessSubmitted = aIsGuessSubmitted;}
     
     // Methods
     
@@ -111,14 +119,28 @@ public class WModel extends Observable {
             }
         }
     }
-    
-    public void addQ(){
-        //guess.concat("Q");
-        guess = "Q";
+
+    public void modifyGuess(String keyText, boolean isAddToGuess){
+        if (isAddToGuess)
+            guess += keyText;
+        else if (!isAddToGuess)
+            guess = removeLastChar(guess);
+        //System.out.println(guess);
         setChanged();
         notifyObservers();
-    };
+    }
+    public void submitGuess(){
+        isGuessSubmitted = true;
+        setChanged();
+        notifyObservers();
+    }
+     
     
+    public static String removeLastChar(String s) {
+        return (s == null || s.length() == 0)
+          ? null 
+          : (s.substring(0, s.length() - 1));
+    }
     
     private void initializeAvailableLetters() {
         // Put a-z lower case letters with NO_STATE in Hashmap
@@ -158,6 +180,13 @@ public class WModel extends Observable {
         // do i need to check if arr is empty?
         return list;
     }
+
+
+
+
+
+
+   
 
 
     

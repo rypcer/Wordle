@@ -20,8 +20,21 @@ public class WController {
     public void setView(WView view){
         this.view = view;
     }
-    public void addQ(){
-        model.addQ();
+    public void addToGuess(String buttonText){
+        //int asciiNum = ((int)buttonText.charAt(0));
+        if(!guessFieldsFilled())
+            model.modifyGuess(buttonText, true);
     }
-    
+    public void removeFromGuess(){
+        if(model.getGuess().length() > 0)
+            model.modifyGuess(null, false);
+    }
+    public void submitGuess(){
+        System.out.println("asdasd");
+        if(guessFieldsFilled())
+            model.submitGuess();
+    }
+    public boolean guessFieldsFilled (){
+        return model.getGuess().length() == model.GUESS_LENGTH;
+    }
 }
