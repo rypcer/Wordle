@@ -23,6 +23,7 @@ public class WModel extends Observable {
     
     private final int MAX_GUESSES = 6; // do we need to have a getter for constants?
     public final int NO_STATE = -1, GREY_STATE = 0, GREEN_STATE = 1, YELLOW_STATE = 2;
+    public final int EMPTY_STATE = -2;
     // Divide Alphabet into 4 categories according to line above
     private HashMap<Character,Integer> availableLetters; 
     private int guessStateColors[] = new int[5];
@@ -36,7 +37,7 @@ public class WModel extends Observable {
     
     private String answer;
     private static boolean playerHasWon;
-    
+    public String guess = new String(); // ADD IN CLI aswell
     public WModel(){
         allowOnlyWordListGuesses = true;
         showAnwser= true;
@@ -110,6 +111,14 @@ public class WModel extends Observable {
             }
         }
     }
+    
+    public void addQ(){
+        //guess.concat("Q");
+        guess = "Q";
+        setChanged();
+        notifyObservers();
+    };
+    
     
     private void initializeAvailableLetters() {
         // Put a-z lower case letters with NO_STATE in Hashmap

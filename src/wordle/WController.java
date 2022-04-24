@@ -20,5 +20,8 @@ public class WController {
     public void setView(WView view){
         this.view = view;
     }
+    public void addQ(){
+        model.addQ();
+    }
     
 }
