@@ -37,6 +37,8 @@ public class WView implements Observer {
     private JButton keyboardButtons[];
     private JLabel guessFields[][];
     private JButton newGameButton;
+    private JLabel errorLabel;
+    private JLabel answerLabel;
     private int backspaceKeyIndex = 27, enterKeyIndex = 19;
 
     
@@ -84,19 +86,38 @@ public class WView implements Observer {
         optionsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         optionsPanel.setPreferredSize(OPTIONS_SIZE);
         optionsPanel.setMaximumSize(OPTIONS_SIZE);
+        
         // Create Button
         newGameButton = new JButton("New Game");
         newGameButton.addActionListener((ActionEvent e) -> {
             controller.restartGame();
         });
+        errorLabel = new JLabel("Word Not in List");
+        answerLabel = new JLabel("Answer: "+model.getAnswer());
+        errorLabel.setVisible(false);
+        answerLabel.setVisible(false);
         optionsPanel.add(newGameButton);
+        optionsPanel.add(answerLabel);
+        optionsPanel.add(errorLabel);
         newGameButton.setEnabled(false);
     }
     private void updateOptionsPanel(){
         if(model.allowGameRestart())
             newGameButton.setEnabled(true);
-        if(model.hasGameRestarted())
+        if(model.hasGameRestarted()){
             newGameButton.setEnabled(false);
+            answerLabel.setText("Answer: "+ model.getAnswer());
+        }
+        if(model.isWordNotInList())
+            errorLabel.setVisible(true);
+        else
+            errorLabel.setVisible(false);
+        
+  
+        if(model.isShowAnswer() || model.alwaysShowAnswer())
+            answerLabel.setVisible(true);
+        else
+            answerLabel.setVisible(false);
     }
     
     
@@ -109,7 +130,6 @@ public class WView implements Observer {
                 guessFields[row][col] = createGuessField("");
             }
         }
-        
     }
     
     private void createGuessPanel(){
@@ -118,7 +138,7 @@ public class WView implements Observer {
         guessPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         guessPanel.setPreferredSize(GUESS_SIZE);
         guessPanel.setMaximumSize(GUESS_SIZE);
-        guessPanel.setBorder(BorderFactory.createTitledBorder("guess"));
+        //guessPanel.setBorder(BorderFactory.createTitledBorder("guess"));
         // Add all guess fields to panel
         for(int i = 0; i < guessFields.length; i++)
             for(int j = 0; j < model.GUESS_LENGTH; j++)
@@ -232,7 +252,7 @@ public class WView implements Observer {
         keyboardPanel = new JPanel();
         keyboardPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         keyboardPanel.setPreferredSize(KEYBOARD_SIZE);
-        keyboardPanel.setBorder(BorderFactory.createTitledBorder("keyboard"));
+        //keyboardPanel.setBorder(BorderFactory.createTitledBorder("keyboard"));
         
         // Add action listener to KeyButtons
         for(int i = 0 ; i < keyboardButtons.length;i++){

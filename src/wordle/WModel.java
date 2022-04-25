@@ -33,7 +33,7 @@ public class WModel extends Observable {
     private int guessStateColors[];
     // 3 Flags
     private boolean allowOnlyWordListGuesses; 
-    private boolean showAnswer;
+    private boolean alwaysShowAnswer;
     private boolean selectRandomGuessWord;
     
     private final List<String> targetWords;
@@ -44,6 +44,9 @@ public class WModel extends Observable {
     private static boolean isGuessSubmitted;
     private static boolean allowGameRestart;
     private static boolean hasGameRestarted;
+    private static boolean wordNotInList;
+    private static boolean showAnswer;
+    
     private String guess; // ADD IN CLI aswell
     private int currentGuessTry;
     
@@ -52,16 +55,13 @@ public class WModel extends Observable {
         guessWords = loadInFromFile("src/wordle/data/words.txt");
         
         allowOnlyWordListGuesses = false;
-        showAnswer = true;
-        selectRandomGuessWord = false;
+        alwaysShowAnswer = true;
+        selectRandomGuessWord = true;
         
         guessStateColors = new int[GUESS_LENGTH];
-        
         initGame();
-        
-        //resetGuessColors(); // I dont think we need? as its reset in color letters in Guess
+ 
     }
-    
    
     public void initGame(){
         setCurrentGuessTry(0);
@@ -72,11 +72,14 @@ public class WModel extends Observable {
         currentGuessTry = 0;
         guess = new String();
         allowGameRestart = false;
+        wordNotInList = false;
+        showAnswer = false;
         hasGameRestarted = true;
         setChanged();
         notifyObservers();
-        // After updating, set back to false
+        // After updating Observers, set back to false
         hasGameRestarted = false;
+        
     }
         
     // Getter & Setters
@@ -105,6 +108,9 @@ public class WModel extends Observable {
     public boolean isGuessSubmitted() {return isGuessSubmitted;}
     public void setIsGuessSubmitted(boolean aIsGuessSubmitted) {
         isGuessSubmitted = aIsGuessSubmitted;}
+    
+    
+    
     
     // Methods
     
@@ -225,35 +231,36 @@ public class WModel extends Observable {
             guess += keyText;
         else if (!isAddToGuess)
             guess = removeLastChar(guess);
-        //System.out.println(guess);
         setChanged();
         notifyObservers();
     }
+    
     public void submitGuess(){ // Check with CLI if we can use there
-        //allowOnlyWordListGuesses
-        //if(isGuessInWordList(guess)){
-           
-        //}
-        //else
+        wordNotInList = false;
+        if(allowOnlyWordListGuesses){
+            if(!isGuessInWordList(guess.toLowerCase())){
+                wordNotInList = true;
+                setChanged();
+                notifyObservers();
+                return;
+            }
+        }
+            
         setIsGuessSubmitted(true);
         colorLettersInGuess(guess);
-        //System.out.println(getAvailableLetters().get('c'));
-         System.out.println(guess);
+
         if(guess.toLowerCase().equals(answer)){
             playerHasWon = true;
-            System.out.println("YOU WIN!");
         }
 
         currentGuessTry++;
         guess = "";
-        // needs to be done after try is incremented
+        // Checks needs to be done after try is incremented
         if(currentGuessTry == MAX_GUESSES){
             showAnswer = true;
-            System.out.println("YOU LOST!");
         }
         if(currentGuessTry == 1){
             allowGameRestart = true;
-            System.out.println("SHOW NEW WORD BUTTON");
         }
         setChanged();
         notifyObservers();
@@ -291,6 +298,29 @@ public class WModel extends Observable {
 
     public static void setHasGameRestarted(boolean aHasGameRestarted) {
         hasGameRestarted = aHasGameRestarted;
+    }
+
+    public static boolean isWordNotInList() {
+        return wordNotInList;
+    }
+
+    public static void setWordNotInList(boolean aWordNotInList) {
+        wordNotInList = aWordNotInList;
+    }
+
+    public static boolean isShowAnswer() {
+        return showAnswer;
+    }
+
+    public static void setShowAnswer(boolean aShowAnswer) {
+        showAnswer = aShowAnswer;
+    }
+    public boolean alwaysShowAnswer() {
+        return alwaysShowAnswer;
+    }
+
+    public void setAlwaysShowAnswer(boolean alwaysShowAnswer) {
+        this.alwaysShowAnswer = alwaysShowAnswer;
     }
 
 

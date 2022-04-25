@@ -23,7 +23,7 @@ public class WController {
         this.view = view;
     }
     public void addToGuess(String buttonText){
-        if(!areGuessFieldsFilled() && !model.getPlayerHasWon() && playerHasTriesLeft())
+        if(!isGuessComplete() && !model.getPlayerHasWon() && playerHasTriesLeft())
             model.modifyGuess(buttonText, true);
     }
     public void removeFromGuess(){
@@ -31,15 +31,14 @@ public class WController {
             model.modifyGuess(null, false);
     }
     public void submitGuess(){
-        if(areGuessFieldsFilled() && !model.getPlayerHasWon() && playerHasTriesLeft()){
+        if(isGuessComplete() && !model.getPlayerHasWon() && playerHasTriesLeft()){
             model.submitGuess();
         }
-        
     }
     public void restartGame(){
         model.initGame();
     }
-    public boolean areGuessFieldsFilled (){
+    public boolean isGuessComplete (){
         return model.getGuess().length() == model.GUESS_LENGTH;
     }
     public boolean playerHasTriesLeft(){
