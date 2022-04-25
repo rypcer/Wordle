@@ -23,21 +23,26 @@ public class WController {
         this.view = view;
     }
     public void addToGuess(String buttonText){
-        //int asciiNum = ((int)buttonText.charAt(0));
-        if(!areGuessFieldsFilled())
+        if(!areGuessFieldsFilled() && !model.getPlayerHasWon() && playerHasTriesLeft())
             model.modifyGuess(buttonText, true);
     }
     public void removeFromGuess(){
-        if(model.getGuess().length() > 0)
+        if(model.getGuess().length() > 0 && !model.getPlayerHasWon() && playerHasTriesLeft())
             model.modifyGuess(null, false);
     }
     public void submitGuess(){
-        if(areGuessFieldsFilled()){
+        if(areGuessFieldsFilled() && !model.getPlayerHasWon() && playerHasTriesLeft()){
             model.submitGuess();
         }
         
     }
+    public void restartGame(){
+        model.initGame();
+    }
     public boolean areGuessFieldsFilled (){
         return model.getGuess().length() == model.GUESS_LENGTH;
+    }
+    public boolean playerHasTriesLeft(){
+        return model.getCurrentGuessTry() != model.getMAX_GUESSES();
     }
 }

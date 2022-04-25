@@ -21,6 +21,7 @@ import javax.swing.border.*;
 public class WView implements Observer {
     
     private static final Dimension GUESS_SIZE = new Dimension(340,420);
+    private static final Dimension OPTIONS_SIZE = new Dimension(420,50);
     private static final Dimension KEYBOARD_SIZE = new Dimension(420, 220);
     
     private static Color GREEN = new Color(122, 171, 104);
@@ -29,11 +30,13 @@ public class WView implements Observer {
     private final WModel model;
     private final WController controller;
     private JFrame frame;
+    private JPanel optionsPanel;
     private JPanel keyboardPanel;
     private JPanel guessPanel; // Either create new component like jLabel by inheriting or draw as graphic
     private String keyboardLayout;
     private JButton keyboardButtons[];
     private JLabel guessFields[][];
+    private JButton newGameButton;
     private int backspaceKeyIndex = 27, enterKeyIndex = 19;
 
     
@@ -59,6 +62,8 @@ public class WView implements Observer {
         initializeKeyboard();
         createKeyboardPanel();
         contentPane.add(keyboardPanel);
+        createOptionsPanel();
+        contentPane.add(optionsPanel);
         frame.pack(); 
         frame.setLayout(null);
         frame.setResizable(false);
@@ -69,9 +74,31 @@ public class WView implements Observer {
     public void update(java.util.Observable o, Object arg){
         updateGuessPanel();
         updateKeyboardPanel();
+        updateOptionsPanel();
         frame.repaint();
-        
     }
+    
+    // Options Panel Methods
+    private void createOptionsPanel(){
+        optionsPanel = new JPanel();
+        optionsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        optionsPanel.setPreferredSize(OPTIONS_SIZE);
+        optionsPanel.setMaximumSize(OPTIONS_SIZE);
+        // Create Button
+        newGameButton = new JButton("New Game");
+        newGameButton.addActionListener((ActionEvent e) -> {
+            controller.restartGame();
+        });
+        optionsPanel.add(newGameButton);
+        newGameButton.setEnabled(false);
+    }
+    private void updateOptionsPanel(){
+        if(model.allowGameRestart())
+            newGameButton.setEnabled(true);
+        if(model.hasGameRestarted())
+            newGameButton.setEnabled(false);
+    }
+    
     
     // Guess Field Panel Methods
     private void initializeGuessFields(){
@@ -84,6 +111,7 @@ public class WView implements Observer {
         }
         
     }
+    
     private void createGuessPanel(){
         //guessPanel.setLayout(new BoxLayout(guessPanel,BoxLayout.X_AXIS));
         guessPanel = new JPanel();
@@ -102,6 +130,10 @@ public class WView implements Observer {
         String guess = model.getGuess();
         int currentGuessTry = model.getCurrentGuessTry();
         JLabel currentGuessField;
+        if(model.hasGameRestarted()){
+            clearAllGuessRows();
+            return;
+        }
         
         // Update PREVIOUS Guess Row Colors 
         if(model.isGuessSubmitted()){
@@ -113,7 +145,7 @@ public class WView implements Observer {
             model.setIsGuessSubmitted(false);
             return;
         }
-
+        
         // Update CURRENT Guess Row Colors (User adds guess words)
         for (int j = 0; j < model.GUESS_LENGTH; j++){
             currentGuessField = guessFields[currentGuessTry][j];
@@ -122,13 +154,24 @@ public class WView implements Observer {
                 changeGuessFieldState(currentGuessField, model.NO_STATE);
             }
             else {
-                currentGuessField.setText(null);
-                changeGuessFieldState(currentGuessField, model.EMPTY_STATE);
+                clearGuessField(currentGuessField);
             }
         }
         
     }
 
+    public void clearGuessField(JLabel currentGuessField) {
+        currentGuessField.setText(null);
+        changeGuessFieldState(currentGuessField, model.EMPTY_STATE);
+    }
+    
+    private void clearAllGuessRows(){
+        for(int row = 0; row < model.getMAX_GUESSES(); row++){
+            for(int col = 0; col < model.GUESS_LENGTH; col++ ){
+                clearGuessField(guessFields[row][col]);
+            }
+        }
+    }
     private JLabel createGuessField(String text){
         JLabel field = new JLabel(text);
         field.setFont(new Font("Sans", Font.BOLD, 28)); 
@@ -187,6 +230,9 @@ public class WView implements Observer {
     
     private void createKeyboardPanel() {
         keyboardPanel = new JPanel();
+        keyboardPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        keyboardPanel.setPreferredSize(KEYBOARD_SIZE);
+        keyboardPanel.setBorder(BorderFactory.createTitledBorder("keyboard"));
         
         // Add action listener to KeyButtons
         for(int i = 0 ; i < keyboardButtons.length;i++){
@@ -211,9 +257,7 @@ public class WView implements Observer {
         for(int i = 0 ; i < keyboardButtons.length;i++)
            keyboardPanel.add(keyboardButtons[i]);
 
-        keyboardPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        keyboardPanel.setPreferredSize(KEYBOARD_SIZE);
-        keyboardPanel.setBorder(BorderFactory.createTitledBorder("keyboard"));
+        
     }
     private void updateKeyboardPanel(){
         JButton key;

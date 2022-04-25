@@ -33,7 +33,7 @@ public class WModel extends Observable {
     private int guessStateColors[];
     // 3 Flags
     private boolean allowOnlyWordListGuesses; 
-    private boolean showAnwser;
+    private boolean showAnswer;
     private boolean selectRandomGuessWord;
     
     private final List<String> targetWords;
@@ -42,6 +42,8 @@ public class WModel extends Observable {
     private String answer;
     private static boolean playerHasWon;
     private static boolean isGuessSubmitted;
+    private static boolean allowGameRestart;
+    private static boolean hasGameRestarted;
     private String guess; // ADD IN CLI aswell
     private int currentGuessTry;
     
@@ -50,12 +52,13 @@ public class WModel extends Observable {
         guessWords = loadInFromFile("src/wordle/data/words.txt");
         
         allowOnlyWordListGuesses = false;
-        showAnwser= true;
+        showAnswer = true;
         selectRandomGuessWord = false;
         
         guessStateColors = new int[GUESS_LENGTH];
+        
         initGame();
-
+        
         //resetGuessColors(); // I dont think we need? as its reset in color letters in Guess
     }
     
@@ -68,12 +71,18 @@ public class WModel extends Observable {
         answer = getRandomWord();
         currentGuessTry = 0;
         guess = new String();
+        allowGameRestart = false;
+        hasGameRestarted = true;
+        setChanged();
+        notifyObservers();
+        // After updating, set back to false
+        hasGameRestarted = false;
     }
         
     // Getter & Setters
     
     public boolean allowOnlyWordListGuesses() {return allowOnlyWordListGuesses;}
-    public boolean showAnwser() {return showAnwser;}
+    public boolean showAnwser() {return showAnswer;}
     public boolean selectRandomGuessWord() {return selectRandomGuessWord;}
     public int getMAX_GUESSES() {return MAX_GUESSES;}
     public int getNO_STATE() {return NO_STATE;}
@@ -229,8 +238,23 @@ public class WModel extends Observable {
         setIsGuessSubmitted(true);
         colorLettersInGuess(guess);
         //System.out.println(getAvailableLetters().get('c'));
+         System.out.println(guess);
+        if(guess.toLowerCase().equals(answer)){
+            playerHasWon = true;
+            System.out.println("YOU WIN!");
+        }
+
         currentGuessTry++;
         guess = "";
+        // needs to be done after try is incremented
+        if(currentGuessTry == MAX_GUESSES){
+            showAnswer = true;
+            System.out.println("YOU LOST!");
+        }
+        if(currentGuessTry == 1){
+            allowGameRestart = true;
+            System.out.println("SHOW NEW WORD BUTTON");
+        }
         setChanged();
         notifyObservers();
     }
@@ -241,18 +265,32 @@ public class WModel extends Observable {
           : (s.substring(0, s.length() - 1));
     }
 
-    /**
-     * @return the currentGuessTry
-     */
+    
+    
+    
     public int getCurrentGuessTry() {
         return currentGuessTry;
     }
 
-    /**
-     * @param currentGuessTry the currentGuessTry to set
-     */
     public void setCurrentGuessTry(int currentGuessTry) {
         this.currentGuessTry = currentGuessTry;
+    }
+
+    public static boolean allowGameRestart() {
+        return allowGameRestart;
+    }
+
+    public static void setAllowGameRestart(boolean aEnableGameRestart) {
+        allowGameRestart = aEnableGameRestart;
+    }
+
+
+    public static boolean hasGameRestarted() {
+        return hasGameRestarted;
+    }
+
+    public static void setHasGameRestarted(boolean aHasGameRestarted) {
+        hasGameRestarted = aHasGameRestarted;
     }
 
 
