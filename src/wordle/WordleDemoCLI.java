@@ -34,7 +34,7 @@ public class WordleDemoCLI {
 
         for (int tries = 0; tries < model.getMAX_GUESSES(); tries++){
             System.out.println("\n");
-            model.resetGuessColors();         
+            //model.resetGuessColors();         
             printAvailableLetters();
             
             // Receive Guess from player
