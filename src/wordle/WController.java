@@ -24,7 +24,7 @@ public class WController {
     }
     public void addToGuess(String buttonText){
         //int asciiNum = ((int)buttonText.charAt(0));
-        if(!guessFieldsFilled())
+        if(!areGuessFieldsFilled())
             model.modifyGuess(buttonText, true);
     }
     public void removeFromGuess(){
@@ -32,12 +32,12 @@ public class WController {
             model.modifyGuess(null, false);
     }
     public void submitGuess(){
-        if(guessFieldsFilled()){
+        if(areGuessFieldsFilled()){
             model.submitGuess();
         }
         
     }
-    public boolean guessFieldsFilled (){
+    public boolean areGuessFieldsFilled (){
         return model.getGuess().length() == model.GUESS_LENGTH;
     }
 }

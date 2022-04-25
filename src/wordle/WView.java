@@ -35,10 +35,10 @@ public class WView implements Observer {
     private JButton keyboardButtons[];
     private JLabel guessFields[][];
     private int backspaceKeyIndex = 27, enterKeyIndex = 19;
-    private int currentGuessTry;
+
     
     public WView(WModel model, WController controller){
-        currentGuessTry = 0;
+        
         this.model = model;
         model.addObserver(this);
         this.controller = controller;
@@ -69,7 +69,6 @@ public class WView implements Observer {
     public void update(java.util.Observable o, Object arg){
         updateGuessPanel();
         updateKeyboardPanel();
-        // TODO: Check color keyboard according to availableLetters
         frame.repaint();
         
     }
@@ -99,9 +98,23 @@ public class WView implements Observer {
     } 
     
     private void updateGuessPanel(){
+        // Added as variables so they dont call model each iteration, is it right?
         String guess = model.getGuess();
+        int currentGuessTry = model.getCurrentGuessTry();
         JLabel currentGuessField;
-        // Add user guess to CURRENT guess row & color guess fields
+        
+        // Update PREVIOUS Guess Row Colors 
+        if(model.isGuessSubmitted()){
+            for(int j = 0; j < model.GUESS_LENGTH; j++){
+                currentGuessField = guessFields[currentGuessTry-1][j];
+                int COLOR_STATE = model.getGuessStateColor(j);
+                changeGuessFieldState(currentGuessField, COLOR_STATE);
+            }
+            model.setIsGuessSubmitted(false);
+            return;
+        }
+
+        // Update CURRENT Guess Row Colors (User adds guess words)
         for (int j = 0; j < model.GUESS_LENGTH; j++){
             currentGuessField = guessFields[currentGuessTry][j];
             if (j < guess.length()){
@@ -113,16 +126,7 @@ public class WView implements Observer {
                 changeGuessFieldState(currentGuessField, model.EMPTY_STATE);
             }
         }
-       
-        // updateRowColorsAfterSubmit
-        if(model.isGuessSubmitted()){
-            for(int j = 0; j < model.GUESS_LENGTH; j++){
-                currentGuessField = guessFields[currentGuessTry][j];
-                int COLOR_STATE = model.getGuessStateColor(j);
-                changeGuessFieldState(currentGuessField, COLOR_STATE);
-            }
-            model.setIsGuessSubmitted(false);
-        }
+        
     }
 
     private JLabel createGuessField(String text){
@@ -161,9 +165,7 @@ public class WView implements Observer {
         field.setBorder(compound);
     }
     
-    
-    
-    
+
     // Keyboard Panel Methods - create keyboard panel class? 
     private void initializeKeyboard(){
         keyboardLayout = "QWERTYUIOPASDFGHJKLZXCVBNM";
@@ -182,6 +184,7 @@ public class WView implements Observer {
             }
         }
     }
+    
     private void createKeyboardPanel() {
         keyboardPanel = new JPanel();
         
@@ -235,7 +238,7 @@ public class WView implements Observer {
         if(state == model.NO_STATE)
             changeKeyColor(key, Color.BLACK, Color.LIGHT_GRAY);
         else if (state == model.GREY_STATE)
-            changeKeyColor(key, Color.WHITE, Color.GRAY);
+            changeKeyColor(key, Color.WHITE, Color.DARK_GRAY);
         else if (state == model.GREEN_STATE)
             changeKeyColor(key, Color.WHITE, GREEN);
         else if (state == model.YELLOW_STATE)

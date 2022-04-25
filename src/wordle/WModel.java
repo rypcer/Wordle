@@ -19,6 +19,8 @@ import java.util.Random;
  * 
  * @author Ajmal
  */
+
+ // ======================================================== USE GETTER SETTERS ONLY OUTSIDE THIS CLASS REFACTOR
 public class WModel extends Observable {
     
     private final int MAX_GUESSES = 6; // do we need to have a getter for constants?
@@ -28,7 +30,7 @@ public class WModel extends Observable {
     // Divide Alphabet into 4 categories according to line above
     private HashMap<Character,Integer> availableLetters;
  
-    private int guessStateColors[] = new int[GUESS_LENGTH];
+    private int guessStateColors[];
     // 3 Flags
     private boolean allowOnlyWordListGuesses; 
     private boolean showAnwser;
@@ -40,23 +42,33 @@ public class WModel extends Observable {
     private String answer;
     private static boolean playerHasWon;
     private static boolean isGuessSubmitted;
-    private String guess = new String(); // ADD IN CLI aswell
+    private String guess; // ADD IN CLI aswell
+    private int currentGuessTry;
+    
     public WModel(){
+        targetWords = loadInFromFile("src/wordle/data/common.txt");
+        guessWords = loadInFromFile("src/wordle/data/words.txt");
+        
         allowOnlyWordListGuesses = false;
         showAnwser= true;
         selectRandomGuessWord = false;
+        
+        guessStateColors = new int[GUESS_LENGTH];
+        initGame();
+
+        //resetGuessColors(); // I dont think we need? as its reset in color letters in Guess
+    }
+    
+   
+    public void initGame(){
+        setCurrentGuessTry(0);
         playerHasWon = false;
         isGuessSubmitted = false;
-        
-        targetWords = loadInFromFile("src/wordle/data/common.txt");
-        guessWords = loadInFromFile("src/wordle/data/words.txt");
-        availableLetters = new HashMap<>();
-        answer = getRandomWord();
         initializeAvailableLetters();
-        resetGuessColors();
+        answer = getRandomWord();
+        currentGuessTry = 0;
+        guess = new String();
     }
-    //======================================================= MODEL NEEDS TO UPDATE OBSERVERS! 
-    
         
     // Getter & Setters
     
@@ -106,8 +118,6 @@ public class WModel extends Observable {
         ccrgr
     
     */
-    
-    
     // precondition guess needs to be lower case
     public void colorLettersInGuess(String guess) {
         guess = guess.toLowerCase();
@@ -157,6 +167,9 @@ public class WModel extends Observable {
     }
     
     private void initializeAvailableLetters() {
+        // Initialized new memory location for each game,
+        // but doesn't affect performance, only happens after each new game round
+        availableLetters = new HashMap<>();
         // Put a-z lower case letters with NO_STATE in Hashmap
         for (int asciiValue = 97; asciiValue <= 122; asciiValue++)
             availableLetters.put((char)asciiValue, NO_STATE);
@@ -215,7 +228,9 @@ public class WModel extends Observable {
         //else
         setIsGuessSubmitted(true);
         colorLettersInGuess(guess);
-        //System.out.println(getAvailableLetters().get('c'));    
+        //System.out.println(getAvailableLetters().get('c'));
+        currentGuessTry++;
+        guess = "";
         setChanged();
         notifyObservers();
     }
@@ -224,6 +239,20 @@ public class WModel extends Observable {
         return (s == null || s.length() == 0)
           ? null 
           : (s.substring(0, s.length() - 1));
+    }
+
+    /**
+     * @return the currentGuessTry
+     */
+    public int getCurrentGuessTry() {
+        return currentGuessTry;
+    }
+
+    /**
+     * @param currentGuessTry the currentGuessTry to set
+     */
+    public void setCurrentGuessTry(int currentGuessTry) {
+        this.currentGuessTry = currentGuessTry;
     }
 
 

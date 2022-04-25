@@ -21,7 +21,6 @@ public class WordleDemoCLI {
 
     
     public static void main(String[] args) {
-
         System.out.println("--- WORDLE CLI VERSION ---");
         System.out.format("Guess a 5 Letter Word in %d Tries!\n"+
                 "Green = Letter in Word and Correct Location\n"+
