@@ -130,13 +130,14 @@ public class WView implements Observer {
                 changeGuessFieldState(currentGuessField, model.EMPTY_STATE);
             }
         }
-        
+       
         // updateRowColorsAfterSubmit
         if(model.isGuessSubmitted()){
             for(int j = 0; j < model.GUESS_LENGTH; j++){
                 currentGuessField = guessFields[currentGuessTry][j];
-                Character letter = Character.toLowerCase(guess.charAt(j));
-                int COLOR_STATE = model.getAvailableLetters().get(letter);
+                //Character letter = Character.toLowerCase(guess.charAt(j));
+                int COLOR_STATE = model.getGuessStateColor(j);
+                //System.out.print(COLOR_STATE);
                 changeGuessFieldState(currentGuessField, COLOR_STATE); // Need to update availableColors so change is displayed here
             }
             model.setIsGuessSubmitted(false);

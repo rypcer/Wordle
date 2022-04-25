@@ -42,9 +42,9 @@ public class WModel extends Observable {
     private static boolean isGuessSubmitted;
     private String guess = new String(); // ADD IN CLI aswell
     public WModel(){
-        allowOnlyWordListGuesses = true;
+        allowOnlyWordListGuesses = false;
         showAnwser= true;
-        selectRandomGuessWord = true;
+        selectRandomGuessWord = false;
         playerHasWon = false;
         isGuessSubmitted = false;
         
@@ -96,50 +96,121 @@ public class WModel extends Observable {
         return guessWords.contains(guess) || targetWords.contains(guess); 
     }
     
-    public void colorLettersInGuess(String guess) {
-        for (int i = 0; i < 5; i++){
-            char guessChar = guess.charAt(i);
-            char answerChar = getAnswer().charAt(i);
-            if (guessChar == answerChar){
-                guessStateColors[i] = GREEN_STATE;
-                availableLetters.replace(guessChar, GREEN_STATE);
+    // TEST THIS FUNCTION in uNIT test against reoccuring letters
+    /*
+        // test 1
+        hello
+        lilol  or llilol
+        // test 2        
+        cigar
+        ccrgr
+        if letter found in guess
+        occurence of letter count in word
+    
+    */
+    
+    private int getOccurencesInString(String s, char c){
+        int count = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == c) {
+                count++;
             }
-            else if (getAnswer().contains(Character.toString(guessChar))){
-                for (int j = 0; j < 5; j++){
-                    if (guessChar == getAnswer().charAt(j) && guessStateColors[j] != GREEN_STATE){
-                        guessStateColors[i] = YELLOW_STATE;
-                        if (availableLetters.get(guessChar) != GREEN_STATE)
-                            availableLetters.replace(guessChar, YELLOW_STATE);
-                    }
+        }
+        return count;
+    }
+    
+    // precondition guess needs to be lower case
+    public void colorLettersInGuess2(String guess){
+        guess=guess.toLowerCase();
+        int occurences;
+        HashMap<Character,Integer> letterOccurences = new HashMap();
+        for (int asciiValue = 97; asciiValue <= 122; asciiValue++){
+            char c = (char)asciiValue;
+            occurences = getOccurencesInString(answer,c);
+            letterOccurences.put(c, occurences); 
+        }
+        
+        char guessChar;
+        for (int i = 0; i < GUESS_LENGTH; i++){
+            guessChar = guess.charAt(i);
+            occurences = letterOccurences.get(guessChar);
+            if(occurences > 0){
+                
+                if (guessChar == getAnswer().charAt(i)){
+                    guessStateColors[i] = GREEN_STATE;
+                    availableLetters.replace(guessChar, GREEN_STATE);
                 }
+                else{
+                    guessStateColors[i] = YELLOW_STATE;
+                    availableLetters.replace(guessChar, YELLOW_STATE);
+                }
+                letterOccurences.replace(guessChar,occurences-1);
             }
-            else {
+            else{
                 guessStateColors[i] = GREY_STATE;
                 availableLetters.replace(guessChar, GREY_STATE);
             }
         }
+        
     }
+    public void colorLettersInGuess(String guess) {
+        guess = guess.toLowerCase();
+        boolean[] isAnswerCharChecked = new boolean[GUESS_LENGTH]; 
+        Arrays.fill(isAnswerCharChecked, false);
+        resetGuessColors();
 
-    public void modifyGuess(String keyText, boolean isAddToGuess){
-        if (isAddToGuess)
-            guess += keyText;
-        else if (!isAddToGuess)
-            guess = removeLastChar(guess);
-        //System.out.println(guess);
-        setChanged();
-        notifyObservers();
+        char guessChar;
+        char answerChar;
+        
+        for (int i = 0; i < GUESS_LENGTH; i++){
+            guessChar = guess.charAt(i);
+            answerChar = getAnswer().charAt(i);
+            if (guessChar == answerChar){
+                guessStateColors[i] = GREEN_STATE;
+                availableLetters.replace(guessChar, GREEN_STATE);
+                isAnswerCharChecked[i] = true;
+            }
+        }
+
+        for (int i = 0; i < GUESS_LENGTH; i++){
+            guessChar = guess.charAt(i);
+            if (guessStateColors[i] != GREEN_STATE&&isCharInAnswer(guessChar, isAnswerCharChecked)){
+                guessStateColors[i] = YELLOW_STATE;
+                
+                if (availableLetters.get(guessChar) != GREEN_STATE)
+                    availableLetters.replace(guessChar, YELLOW_STATE);
+            }
+        }
+        
+        for (int i = 0; i < GUESS_LENGTH; i++){
+            guessChar = guess.charAt(i);
+            if ( guessStateColors[i] != YELLOW_STATE && guessStateColors[i] != GREEN_STATE) {
+                guessStateColors[i] = GREY_STATE;
+                if (availableLetters.get(guessChar) != YELLOW_STATE && availableLetters.get(guessChar) != GREEN_STATE)
+                    availableLetters.replace(guessChar, GREY_STATE);
+            }
+         }
     }
-    public void submitGuess(){
-        isGuessSubmitted = true;
-        setChanged();
-        notifyObservers();
-    }
-     
-    
-    public static String removeLastChar(String s) {
-        return (s == null || s.length() == 0)
-          ? null 
-          : (s.substring(0, s.length() - 1));
+    /*else if (getAnswer().contains(Character.toString(guessChar))){
+                // Search through answer if it contains guess char
+                for (int j = 0; j < GUESS_LENGTH; j++){
+                    if (guessChar == getAnswer().charAt(j) && isAnswerCharChecked[j] == false ){
+                        guessStateColors[i] = YELLOW_STATE;
+                        isAnswerCharChecked[j] = true;
+                        noMatch = false;
+                        if (availableLetters.get(guessChar) != GREEN_STATE)
+                            availableLetters.replace(guessChar, YELLOW_STATE);
+                    }
+                }
+            }*/
+    private boolean isCharInAnswer(char guessChar, boolean[] isAnswerCharChecked){
+        for (int j = 0; j < GUESS_LENGTH; j++){
+            if (guessChar == getAnswer().charAt(j) && isAnswerCharChecked[j] == false ){
+                isAnswerCharChecked[j] = true;
+                return true;
+            }
+        }
+        return false;
     }
     
     private void initializeAvailableLetters() {
@@ -150,7 +221,7 @@ public class WModel extends Observable {
     
     private String getRandomWord(){
         if (!selectRandomGuessWord())
-            return targetWords.get(0);
+            return "hello";//targetWords.get(0);
         String word;
         Random rand = new Random(); 
         int listSize = targetWords.size();
@@ -181,12 +252,36 @@ public class WModel extends Observable {
         return list;
     }
 
-
-
-
-
-
-   
+    
+    // Controller Methods
+    
+    public void modifyGuess(String keyText, boolean isAddToGuess){
+        if (isAddToGuess)
+            guess += keyText;
+        else if (!isAddToGuess)
+            guess = removeLastChar(guess);
+        //System.out.println(guess);
+        setChanged();
+        notifyObservers();
+    }
+    public void submitGuess(){ // Check with CLI if we can use there
+        //allowOnlyWordListGuesses
+        //if(isGuessInWordList(guess)){
+           
+        //}
+        //else
+        setIsGuessSubmitted(true);
+        colorLettersInGuess(guess);
+        //System.out.println(getAvailableLetters().get('c'));    
+        setChanged();
+        notifyObservers();
+    }
+    
+    private static String removeLastChar(String s) {
+        return (s == null || s.length() == 0)
+          ? null 
+          : (s.substring(0, s.length() - 1));
+    }
 
 
     

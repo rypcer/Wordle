@@ -12,7 +12,9 @@ package wordle;
 public class WController {
    
     private WModel model;
-    private WView view;
+    // We dont really update View via Controller 
+    // as its done with Observer Update through Model
+    private WView view; 
     
     public WController(WModel model){
         this.model = model;
@@ -30,9 +32,10 @@ public class WController {
             model.modifyGuess(null, false);
     }
     public void submitGuess(){
-        System.out.println("asdasd");
-        if(guessFieldsFilled())
+        if(guessFieldsFilled()){
             model.submitGuess();
+        }
+        
     }
     public boolean guessFieldsFilled (){
         return model.getGuess().length() == model.GUESS_LENGTH;
