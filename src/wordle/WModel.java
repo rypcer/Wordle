@@ -7,6 +7,7 @@
 */
 package wordle;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -28,6 +29,8 @@ public class WModel extends Observable {
     public final int GUESS_LENGTH = 5;
     public final int EMPTY_STATE = -2;
     public final int NO_STATE = -1, GREY_STATE = 0, GREEN_STATE = 1, YELLOW_STATE = 2;
+    public final Color GREEN = new Color(122, 171, 104);
+    public final Color YELLOW = new Color(199, 178, 96);
     
     // Each Alphabet letter has a state 
     private HashMap<Character,Integer> availableLetters;
@@ -99,7 +102,7 @@ public class WModel extends Observable {
     public boolean getPlayerHasWon() {return playerHasWon;}
     public void setPlayerHasWon(boolean aPlayerHasWon) {this.playerHasWon = aPlayerHasWon;}
     public String getGuess() {return guess;}
-    /*returns true if guess is 5 letters*/
+    /** @Return true if guess is 5 letters*/
     public boolean setGuess(String guess) {
         if(guess.length()==GUESS_LENGTH){this.guess = guess; return true;}
         else return false;   
@@ -113,9 +116,17 @@ public class WModel extends Observable {
         this.guessStateColors[index] = state;}
     public HashMap<Character,Integer> getAvailableLetters() {return availableLetters;}
     
-
+    // Conditions
+    public boolean isGuessComplete (){
+        return getGuess().length() == GUESS_LENGTH;
+    }
+    public boolean playerHasTriesLeft(){
+        return getCurrentGuessTry() != MAX_GUESSES;
+    }
+    
     // Methods
     public void modifyGuess(String keyText, boolean isAddToGuess){
+        keyText = keyText.toLowerCase();
         if (isAddToGuess)
             guess += keyText;
         else if (!isAddToGuess)
@@ -125,9 +136,10 @@ public class WModel extends Observable {
     }
     
     public void submitGuess(){ 
+        guess = guess.toLowerCase();
         wordNotInList = false;
-        if(allowOnlyWordListGuesses){
-            if(!isGuessInWordList(guess.toLowerCase())){
+        if (allowOnlyWordListGuesses){
+            if (!isGuessInWordList(guess)){
                 wordNotInList = true;
                 setChanged();
                 notifyObservers();
@@ -138,7 +150,7 @@ public class WModel extends Observable {
         setIsGuessSubmitted(true);
         colorLettersInGuess(guess);
 
-        if(guess.toLowerCase().equals(answer)){
+        if (guess.equals(answer)){
             playerHasWon = true;
         }
 
@@ -146,11 +158,11 @@ public class WModel extends Observable {
         guess = "";
         
         // Checks needs to be done after try is incremented
-        if(currentGuessTry == MAX_GUESSES){
+        if (currentGuessTry == MAX_GUESSES){
             showAnswer = true;
         }
         
-        if(currentGuessTry == 1){
+        if (currentGuessTry == 1){
             allowGameRestart = true;
         }
         setChanged();

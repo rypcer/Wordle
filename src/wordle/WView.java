@@ -13,39 +13,21 @@ package wordle;
 import java.util.Observer;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import javax.swing.border.*;
 
 /**
  *
  * @author Ajmal
  */
-/** CLASS INVARIANT: keyboardLaout has same letters as model.availableLetters*/
-public class WView implements Observer {
-    
-    private static final Dimension GUESS_SIZE = new Dimension(340,420);
-    private static final Dimension OPTIONS_SIZE = new Dimension(420,50);
-    private static final Dimension KEYBOARD_SIZE = new Dimension(420, 220);
-    
-    private static Color GREEN = new Color(122, 171, 104);
-    private static Color YELLOW = new Color(199, 178, 96);
 
+public class WView implements Observer {
+   
     private final WModel model;
     private final WController controller;
     
     private JFrame frame;
-    private JPanel optionsPanel;
-    private JPanel keyboardPanel;
-    private JPanel guessPanel;
-    
-    private String keyboardLayout;
-    private JButton[] keyboardButtons;
-    private JLabel[][] guessRows;
-    private JButton newGameButton;
-    private JLabel errorLabel;
-    private JLabel answerLabel;
-    private int backspaceKeyIndex = 27, enterKeyIndex = 19;
-
+    private CustomPanel optionsPanel;
+    private CustomPanel keyboardPanel;
+    private CustomPanel guessPanel;
     
     public WView(WModel model, WController controller){
         
@@ -61,15 +43,16 @@ public class WView implements Observer {
         frame = new JFrame("Wordle GUI Demo");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         Container contentPane = frame.getContentPane(); 
-        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS)); 
-        initializeGuessFields();
-        createGuessPanel();
+        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+        
+        // Initialize Panels
+        guessPanel = new GuessPanel(model, controller);
         contentPane.add(guessPanel);
-        initializeKeyboard();
-        createKeyboardPanel();
+        keyboardPanel = new KeyboardPanel(model, controller);
         contentPane.add(keyboardPanel);
-        createOptionsPanel();
+        optionsPanel = new OptionsPanel(model, controller);
         contentPane.add(optionsPanel);
+        
         frame.pack(); 
         frame.setLayout(null);
         frame.setResizable(false);
@@ -78,241 +61,9 @@ public class WView implements Observer {
     
     @Override
     public void update(java.util.Observable o, Object arg){
-        updateGuessPanel();
-        updateKeyboardPanel();
-        updateOptionsPanel();
+        guessPanel.update();
+        keyboardPanel.update();
+        optionsPanel.update();
         frame.repaint();
-    }
-    
-    // Options Panel Methods
-    
-    private void createOptionsPanel(){
-        optionsPanel = new JPanel();
-        optionsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        optionsPanel.setPreferredSize(OPTIONS_SIZE);
-        optionsPanel.setMaximumSize(OPTIONS_SIZE);
-        
-        newGameButton = new JButton("New Game");
-        errorLabel = new JLabel("Word Not in List");
-        answerLabel = new JLabel("Answer: " + model.getAnswer());
-        newGameButton.setEnabled(false);
-        errorLabel.setVisible(false);
-        answerLabel.setVisible(false);
-        
-        newGameButton.addActionListener((ActionEvent e) -> {controller.restartGame();});
-        
-        optionsPanel.add(newGameButton);
-        optionsPanel.add(answerLabel);
-        optionsPanel.add(errorLabel);
-    }
-    
-    private void updateOptionsPanel(){
-        if(model.allowGameRestart())
-            newGameButton.setEnabled(true);
-        if(model.hasGameRestarted()){
-            newGameButton.setEnabled(false);
-            answerLabel.setText("Answer: " + model.getAnswer());
-        }
-        if(model.isWordNotInList())
-            errorLabel.setVisible(true);
-        else
-            errorLabel.setVisible(false);
-  
-        if(model.isShowAnswer() || model.alwaysShowAnswer())
-            answerLabel.setVisible(true);
-        else
-            answerLabel.setVisible(false);
-    }
-    
-    
-    // Guess Panel Methods
-    
-    private void initializeGuessFields(){
-        guessRows = new JLabel[model.MAX_GUESSES][model.GUESS_LENGTH];
-        for(int row = 0; row < model.MAX_GUESSES; row++){
-            for(int col = 0; col < model.GUESS_LENGTH; col++ ){
-                guessRows[row][col] = createGuessField("");
-            }
-        }
-    }
-    
-    private void createGuessPanel(){
-        guessPanel = new JPanel();
-        guessPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        guessPanel.setPreferredSize(GUESS_SIZE);
-        guessPanel.setMaximumSize(GUESS_SIZE);
-        //guessPanel.setBorder(BorderFactory.createTitledBorder("guess"));
-        // Add all guess fields to panel
-        for(int i = 0; i < guessRows.length; i++)
-            for(int j = 0; j < model.GUESS_LENGTH; j++)
-                guessPanel.add(guessRows[i][j]);
-    } 
-    
-    private void updateGuessPanel(){
-        // Added as variables so they dont call model each iteration, is it right?
-        String guess = model.getGuess();
-        int currentGuessTry = model.getCurrentGuessTry();
-        JLabel currentGuessField;
-        if(model.hasGameRestarted()){
-            clearAllGuessRows();
-            return;
-        }
-        
-        // Update PREVIOUS Guess Row Colors 
-        if(model.isGuessSubmitted()){
-            for(int j = 0; j < model.GUESS_LENGTH; j++){
-                currentGuessField = guessRows[currentGuessTry-1][j];
-                int COLOR_STATE = model.getGuessStateColor(j);
-                changeGuessFieldState(currentGuessField, COLOR_STATE);
-            }
-            model.setIsGuessSubmitted(false);
-            return;
-        }
-        
-        // Update CURRENT Guess Row Colors (User adds guess words)
-        for (int j = 0; j < model.GUESS_LENGTH; j++){
-            currentGuessField = guessRows[currentGuessTry][j];
-            if (j < guess.length()){
-                currentGuessField.setText(Character.toString(guess.charAt(j)));
-                changeGuessFieldState(currentGuessField, model.NO_STATE);
-            }
-            else {
-                clearGuessField(currentGuessField);
-            }
-        }
-        
-    }
-
-    public void clearGuessField(JLabel currentGuessField) {
-        currentGuessField.setText(null);
-        changeGuessFieldState(currentGuessField, model.EMPTY_STATE);
-    }
-    
-    private void clearAllGuessRows(){
-        for(int row = 0; row < model.MAX_GUESSES; row++){
-            for(int col = 0; col < model.GUESS_LENGTH; col++ ){
-                clearGuessField(guessRows[row][col]);
-            }
-        }
-    }
-    private JLabel createGuessField(String text){
-        JLabel field = new JLabel(text);
-        field.setFont(new Font("Sans", Font.BOLD, 28)); 
-        changeGuessFieldState(field, model.EMPTY_STATE);
-        field.setPreferredSize(new Dimension(55,55));
-        return field;
-    }
-    
-    private void changeGuessFieldState(JLabel field, int state){
-        if (state == model.GREEN_STATE)
-            setFieldColor(field, null, GREEN, Color.WHITE);
-        else if (state == model.YELLOW_STATE)
-            setFieldColor(field, null, YELLOW, Color.WHITE);
-        else if (state == model.GREY_STATE)
-            setFieldColor(field, null, Color.DARK_GRAY, Color.WHITE);
-        else if (state == model.NO_STATE)
-            setFieldColor(field,Color.GRAY, null, Color.BLACK);
-        else if (state == model.EMPTY_STATE)
-            setFieldColor(field,Color.LIGHT_GRAY, null, null);
-    }
-    
-    private void setFieldColor(JLabel field, Color borderColor, 
-            Color fillColor, Color fontColor){
-        
-        field.setBackground(fillColor);
-        boolean isOpaque = fillColor != null;
-        field.setOpaque(isOpaque);
-        field.setForeground(fontColor);
-        int borderThickness = 2;
-        Border line;
-        line = (borderColor != null) ? BorderFactory.createLineBorder(borderColor, 
-                borderThickness) : null;
-        Border margin = new EmptyBorder(0, 16, 0, 0);
-        Border compound = new CompoundBorder(line, margin);
-        field.setBorder(compound);
-    }
-    
-
-    // Keyboard Panel Methods - create keyboard panel class? 
-    private void initializeKeyboard(){
-        keyboardLayout = "QWERTYUIOPASDFGHJKLZXCVBNM";
-        String backspace = Character.toString((char)9003);
-        String enter = "Enter";
-        keyboardButtons = new JButton[keyboardLayout.length()+2];
-        // x iteratrates through keyboardLayout array
-        // i iteratrates through keyboardButtons array
-        for (int i = 0, x = 0; i < keyboardButtons.length; i++){
-            if (i == enterKeyIndex)
-                keyboardButtons[i] = createKeyboardButton(enter);
-            else if (i == backspaceKeyIndex)
-                keyboardButtons[i] = createKeyboardButton(backspace);
-            else{
-                keyboardButtons[i] = createKeyboardButton(Character.toString(
-                        keyboardLayout.charAt(x)));
-                x++; 
-            }
-        }
-    }
-    
-    private void createKeyboardPanel() {
-        keyboardPanel = new JPanel();
-        keyboardPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        keyboardPanel.setPreferredSize(KEYBOARD_SIZE);
-        //keyboardPanel.setBorder(BorderFactory.createTitledBorder("keyboard"));
-        
-        // Add action listener to KeyButtons
-        for(int i = 0 ; i < keyboardButtons.length;i++){
-            if(i == enterKeyIndex){
-                keyboardButtons[i].addActionListener((ActionEvent e) -> {
-                    controller.submitGuess();});
-            }
-            else if(i == backspaceKeyIndex){
-                keyboardButtons[i].addActionListener((ActionEvent e) -> {
-                    controller.removeFromGuess();});
-            }
-            else{
-                keyboardButtons[i].addActionListener((ActionEvent e) -> {
-                    String buttonText = ((JButton)e.getSource()).getText();
-                    controller.addToGuess(buttonText);});
-            }
-        }
-        // Add KeyButtons to Panel
-        for(int i = 0 ; i < keyboardButtons.length;i++)
-           keyboardPanel.add(keyboardButtons[i]);
-    }
-    
-    private void updateKeyboardPanel(){
-        JButton key; char c;
-        for(int i = 0 ; i < keyboardButtons.length;i++){
-            key = keyboardButtons[i];
-            c = key.getText().toLowerCase().charAt(0);
-            if(i != enterKeyIndex && i != backspaceKeyIndex)
-                changeKeyState(key, model.getAvailableLetters().get(c));
-        }
-    }
-    
-    private JButton createKeyboardButton(String text) {
-        JButton key = new JButton(text);
-        changeKeyState(key, model.NO_STATE);
-        Border margin = new EmptyBorder(20, 14, 20, 14);
-        Border compound = new CompoundBorder(null, margin);
-        key.setBorder(compound);
-        return key;
-    }
-    
-    private void changeKeyState(JButton key, int state){
-        if(state == model.NO_STATE)
-            changeKeyColor(key, Color.BLACK, Color.LIGHT_GRAY);
-        else if (state == model.GREY_STATE)
-            changeKeyColor(key, Color.WHITE, Color.DARK_GRAY);
-        else if (state == model.GREEN_STATE)
-            changeKeyColor(key, Color.WHITE, GREEN);
-        else if (state == model.YELLOW_STATE)
-            changeKeyColor(key, Color.WHITE, YELLOW);
-    }
-    
-    private void changeKeyColor(JButton key, Color fontColor, Color fillColor){
-        key.setForeground(fontColor);
-        key.setBackground(fillColor);
     }
 }
