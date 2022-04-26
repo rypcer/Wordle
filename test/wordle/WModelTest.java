@@ -20,7 +20,16 @@ public class WModelTest {
     public WModelTest() {
         
     }
-
+        // TEST THIS FUNCTION in uNIT test against reoccuring letters
+    /*
+        // test 1
+        hello
+        lilol  or llilo
+        // test 2        
+        cigar
+        ccrgr
+    
+    */
     @Test
     public void setGuessStateColor() {
         model.setGuessStateColor(0,6);

@@ -1,7 +1,10 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Overview:
+ * Controller just checks with Model Methods if input should be handled or not.
+ * Notes:
+ * We don't really update View via Controller 
+ * as its done with Observer Update through Model
+ * but could be useful in some cases
  */
 package wordle;
 
@@ -12,8 +15,6 @@ package wordle;
 public class WController {
    
     private WModel model;
-    // We dont really update View via Controller 
-    // as its done with Observer Update through Model
     private WView view; 
     
     public WController(WModel model){
@@ -38,10 +39,10 @@ public class WController {
     public void restartGame(){
         model.initGame();
     }
-    public boolean isGuessComplete (){
+    private boolean isGuessComplete (){
         return model.getGuess().length() == model.GUESS_LENGTH;
     }
-    public boolean playerHasTriesLeft(){
-        return model.getCurrentGuessTry() != model.getMAX_GUESSES();
+    private boolean playerHasTriesLeft(){
+        return model.getCurrentGuessTry() != model.MAX_GUESSES;
     }
 }
