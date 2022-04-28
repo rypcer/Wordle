@@ -24,15 +24,15 @@ public class WController {
         this.view = view;
     }
     public void addToGuess(String buttonText){
-        if (!model.isGuessComplete() && !model.getPlayerHasWon() && model.playerHasTriesLeft())
-            model.modifyGuess(buttonText, true);
+        if (!model.isGuessComplete() && !model.hasPlayerWon() && model.playerHasTriesLeft())
+            model.addToGuess(buttonText);
     }
     public void removeFromGuess(){
-        if (model.getGuess().length() > 0 && !model.getPlayerHasWon() && model.playerHasTriesLeft())
-            model.modifyGuess(null, false);
+        if (model.getGuess().length() > 0 && !model.hasPlayerWon() && model.playerHasTriesLeft())
+            model.removeFromGuess();
     }
     public void submitGuess(){
-        if (model.isGuessComplete() && !model.getPlayerHasWon() && model.playerHasTriesLeft()){
+        if (model.isGuessComplete() && !model.hasPlayerWon() && model.playerHasTriesLeft()){
             model.submitGuess();
         }
     }

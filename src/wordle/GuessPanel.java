@@ -20,7 +20,7 @@ public class GuessPanel extends CustomPanel{
     public GuessPanel(WModel model, WController controller){
         super(model, controller);
         super.panelSize = new Dimension(340,420);
-        
+
         initializeGuessRows();
         addGuessRowsToPanel();
     }
@@ -33,7 +33,7 @@ public class GuessPanel extends CustomPanel{
         JLabel currentGuessField;
         int COLOR_STATE;
         
-        if(model.hasGameRestarted()){
+        if(model.hasNewGameStarted()){
             clearGuessRows();
             return;
         }
@@ -41,17 +41,17 @@ public class GuessPanel extends CustomPanel{
         // Update PREVIOUS Guess Row Colors
         
         if(model.isGuessSubmitted()){
-            for(int j = 0; j < model.GUESS_LENGTH; j++){
+            for(int j = 0; j < model.MAX_GUESS_LENGTH; j++){
                 currentGuessField = guessRows[currentGuessTry-1][j];
                 COLOR_STATE = model.getGuessStateColor(j);
                 changeGuessFieldState(currentGuessField, COLOR_STATE);
             }
-            model.setIsGuessSubmitted(false);
+            //model.setIsGuessSubmitted(false);
             return;
         }
         
         // Update CURRENT Guess Row Colors (User adds guess words)
-        for (int j = 0; j < model.GUESS_LENGTH; j++){
+        for (int j = 0; j < model.MAX_GUESS_LENGTH; j++){
             currentGuessField = guessRows[currentGuessTry][j];
             if (j < guess.length()){
                 currentGuessField.setText(Character.toString(guess.toUpperCase().charAt(j)));
@@ -65,9 +65,9 @@ public class GuessPanel extends CustomPanel{
     }
     
     private void initializeGuessRows(){
-        guessRows = new JLabel[model.MAX_GUESSES][model.GUESS_LENGTH];
+        guessRows = new JLabel[model.MAX_GUESSES][model.MAX_GUESS_LENGTH];
         for(int row = 0; row < model.MAX_GUESSES; row++){
-            for(int col = 0; col < model.GUESS_LENGTH; col++ ){
+            for(int col = 0; col < model.MAX_GUESS_LENGTH; col++ ){
                 guessRows[row][col] = createGuessField("");
             }
         }
@@ -76,7 +76,7 @@ public class GuessPanel extends CustomPanel{
     private void addGuessRowsToPanel(){
         //guessPanel.setBorder(BorderFactory.createTitledBorder("guess"));
         for(int i = 0; i < guessRows.length; i++)
-            for(int j = 0; j < model.GUESS_LENGTH; j++)
+            for(int j = 0; j < model.MAX_GUESS_LENGTH; j++)
                 this.add(guessRows[i][j]);
     } 
     
@@ -95,7 +95,7 @@ public class GuessPanel extends CustomPanel{
     
     private void clearGuessRows(){
         for(int row = 0; row < model.MAX_GUESSES; row++){
-            for(int col = 0; col < model.GUESS_LENGTH; col++ ){
+            for(int col = 0; col < model.MAX_GUESS_LENGTH; col++ ){
                 clearGuessField(guessRows[row][col]);
             }
         }
@@ -103,9 +103,9 @@ public class GuessPanel extends CustomPanel{
 
     private void changeGuessFieldState(JLabel field, int state){
         if (state == model.GREEN_STATE)
-            setFieldColor(field, null, model.GREEN, Color.WHITE);
+            setFieldColor(field, null, GREEN, Color.WHITE);
         else if (state == model.YELLOW_STATE)
-            setFieldColor(field, null, model.YELLOW, Color.WHITE);
+            setFieldColor(field, null, YELLOW, Color.WHITE);
         else if (state == model.GREY_STATE)
             setFieldColor(field, null, Color.DARK_GRAY, Color.WHITE);
         else if (state == model.NO_STATE)

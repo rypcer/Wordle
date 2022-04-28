@@ -14,13 +14,14 @@ import javax.swing.border.*;
 /** CLASS INVARIANT: keyboardLayout letters need to exist in model.availableLetters*/
 public class KeyboardPanel extends CustomPanel{
 
-    private String keyboardLayout;
+    private final String KEYBOARD_LAYOUT;
     private JButton[] keyboardButtons;
     private int backspaceKeyIndex = 27, enterKeyIndex = 19;
 
     public KeyboardPanel(WModel model, WController controller){
         super(model, controller);
         super.panelSize = new Dimension(420, 220);
+        KEYBOARD_LAYOUT = "QWERTYUIOPASDFGHJKLZXCVBNM";
         initKeyboard();
         createKeyboardPanel();
     }
@@ -37,10 +38,9 @@ public class KeyboardPanel extends CustomPanel{
     }
 
     private void initKeyboard(){
-        keyboardLayout = "QWERTYUIOPASDFGHJKLZXCVBNM";
         String backspace = Character.toString((char)9003);
         String enter = "Enter";
-        keyboardButtons = new JButton[keyboardLayout.length()+2];
+        keyboardButtons = new JButton[KEYBOARD_LAYOUT.length()+2];
         // x iteratrates through keyboardLayout array
         // i iteratrates through keyboardButtons array
         for (int i = 0, x = 0; i < keyboardButtons.length; i++){
@@ -50,7 +50,7 @@ public class KeyboardPanel extends CustomPanel{
                 keyboardButtons[i] = createKeyboardButton(backspace);
             else{
                 keyboardButtons[i] = createKeyboardButton(Character.toString(
-                        keyboardLayout.charAt(x)));
+                        KEYBOARD_LAYOUT.charAt(x)));
                 x++; 
             }
         }
@@ -95,9 +95,9 @@ public class KeyboardPanel extends CustomPanel{
         else if (state == model.GREY_STATE)
             changeKeyColor(key, Color.WHITE, Color.DARK_GRAY);
         else if (state == model.GREEN_STATE)
-            changeKeyColor(key, Color.WHITE, model.GREEN);
+            changeKeyColor(key, Color.WHITE, GREEN);
         else if (state == model.YELLOW_STATE)
-            changeKeyColor(key, Color.WHITE, model.YELLOW);
+            changeKeyColor(key, Color.WHITE, YELLOW);
     }
     
     private void changeKeyColor(JButton key, Color fontColor, Color fillColor){

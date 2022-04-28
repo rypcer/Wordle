@@ -20,12 +20,13 @@ public class WordleDemoCLI {
 
     
     public static void main(String[] args) {
+
         System.out.println("--- WORDLE CLI VERSION ---");
         System.out.format("Guess a %d Letter Word in %d Tries!\n"+
                 "Green = Letter in Word and Correct Location\n"+
                 "Yellow = Letter in Word but Wrong Location\n"+
-                "Grey = Letter not in Word\n",model.GUESS_LENGTH,model.MAX_GUESSES);
-        if(model.alwaysShowAnswer())
+                "Grey = Letter not in Word\n",model.MAX_GUESS_LENGTH,model.MAX_GUESSES);
+        if (model.alwaysShowAnswer())
                 System.out.println("Answer = "+ model.getAnswer() +
                         " - FOR TESTING PURPOSES");
         System.out.println("-".repeat(27));
@@ -38,18 +39,18 @@ public class WordleDemoCLI {
             // Receive Guess from player
             System.out.print("Enter Guess: ");
             guess = input.nextLine().toLowerCase();
-            if(!model.setGuess(guess)){
-                System.out.format("Enter %d Letters!\n",model.GUESS_LENGTH);
+            if (guess.length() != model.MAX_GUESS_LENGTH){
+                System.out.format("Enter %d Letters!\n",model.MAX_GUESS_LENGTH);
                 continue;
             }
-
+            model.setGuess(guess);
             model.submitGuess(); // clears model.guess
 
-            if(model.isWordNotInList()){
+            if (model.isWordNotInList()){
                  System.out.println("Not in WordList!");
                  continue;
             }
-            if(model.getPlayerHasWon()){
+            if (model.hasPlayerWon()){
                 break;
             }
             System.out.print("- ");
@@ -58,7 +59,7 @@ public class WordleDemoCLI {
                     (model.MAX_GUESSES - model.getCurrentGuessTry()));
         }
         
-        if(model.getPlayerHasWon())
+        if (model.hasPlayerWon())
            System.out.println("YOU WIN! - Guessed Correctly !");
         else
            System.out.println("YOU LOST! - Out of Guesses !");
@@ -67,10 +68,9 @@ public class WordleDemoCLI {
                 model.getAnswer().toUpperCase()+ ANSI_RESET);
     }
 
-    
-    
+   
     public static void printColoredGuess(String guess){
-        for (int i = 0; i < model.GUESS_LENGTH; i++){
+        for (int i = 0; i < model.MAX_GUESS_LENGTH; i++){
             int COLOR_STATE = model.getGuessStateColor(i); 
             String COLOR = getANSIColorByState(COLOR_STATE);
             System.out.print(COLOR + guess.toUpperCase().charAt(i) + ANSI_RESET);

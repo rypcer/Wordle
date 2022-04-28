@@ -40,9 +40,9 @@ public class OptionsPanel  extends CustomPanel{
     
     @Override
     public void update(){
-        if(model.allowGameRestart())
+        if(model.allowNewGame())
             newGameButton.setEnabled(true);
-        if(model.hasGameRestarted()){
+        if(model.hasNewGameStarted()){
             newGameButton.setEnabled(false);
             answerLabel.setText("Answer: " + model.getAnswer());
         }

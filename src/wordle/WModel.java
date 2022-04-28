@@ -1,13 +1,11 @@
-/* 
+/** 
  * Overview:
  * 
  * Notes:
  * ASCII table used to initialize letters in efficient way, best idea I ever had
- * 
 */
 package wordle;
 
-import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -26,11 +24,10 @@ import java.util.Random;
 public class WModel extends Observable {
     
     public final int MAX_GUESSES = 6;
-    public final int GUESS_LENGTH = 5;
+    public final int MAX_GUESS_LENGTH = 5;
     public final int EMPTY_STATE = -2;
     public final int NO_STATE = -1, GREY_STATE = 0, GREEN_STATE = 1, YELLOW_STATE = 2;
-    public final Color GREEN = new Color(122, 171, 104);
-    public final Color YELLOW = new Color(199, 178, 96);
+    private final int LETTER_A_ASCII_VALUE = 97, LETTER_Z_ASCII_VALUE = 122;
     
     // Each Alphabet letter has a state 
     private HashMap<Character,Integer> availableLetters;
@@ -40,160 +37,210 @@ public class WModel extends Observable {
     
     // 3 Flags
     private boolean allowOnlyWordListGuesses; 
-    private boolean alwaysShowAnswer;
+    private boolean alwaysDisplayAnswer;
     private boolean selectRandomGuessWord;
     
     private String guess;
     private String answer;
     private int currentGuessTry;
-    private boolean playerHasWon;
+    private boolean hasPlayerWon;
     private boolean isGuessSubmitted;
-    private boolean allowGameRestart;
-    private boolean hasGameRestarted;
+    private boolean allowNewGame;
+    private boolean hasNewGameStarted;
     private boolean wordNotInList;
-    private boolean showAnswer;
+    private boolean displayAnswer;
    
       
     public WModel(){
         targetWordsList = loadInFromFile("src/wordle/data/common.txt");
         guessWordList = loadInFromFile("src/wordle/data/words.txt");
         allowOnlyWordListGuesses = false;
-        alwaysShowAnswer = true;
+        alwaysDisplayAnswer = true;
         selectRandomGuessWord = true;
-        guessStateColors = new int[GUESS_LENGTH];
+        wordNotInList = false;
+        guessStateColors = new int[MAX_GUESS_LENGTH];
         initGame();
     }
-   
+
+    public boolean invariant(){
+        boolean isInsideAlphabet = true;
+        for(int i = 0; i < guess.length();i++)
+            if(guess.charAt(i) <= LETTER_A_ASCII_VALUE && 
+                    guess.charAt(i) >= LETTER_Z_ASCII_VALUE)
+                isInsideAlphabet = false;
+                
+        return guess.length() <= MAX_GUESS_LENGTH && isInsideAlphabet;
+    }
+    /**
+     * @post. All variables need to have the current values
+     * at all times
+     */
     public void initGame(){
-        currentGuessTry = 0;
-        playerHasWon = false;
-        isGuessSubmitted = false;
+        //String oldAnswer = answer;
         initializeAvailableLetters();
         answer = getRandomWord();
-        currentGuessTry = 0;
         guess = new String();
-        allowGameRestart = false;
-        wordNotInList = false;
-        showAnswer = false;
-        hasGameRestarted = true;
+        
+        currentGuessTry = 0;
+        hasPlayerWon = false;
+        isGuessSubmitted = false;
+        allowNewGame = false;
+        hasNewGameStarted = true;
+        displayAnswer = false;
+        
         setChanged();
         notifyObservers();
         // After updating Observers, set back to false
-        hasGameRestarted = false;
+        hasNewGameStarted = false;
+        //assert answer.compareTo(oldAnswer) == 1 : " No new random word generated ";
+        assert currentGuessTry == 0 : "currentGuessTry is not 0";
+        assert hasPlayerWon == false : "hasPlayerWon is true";
+        assert isGuessSubmitted == false : "isGuessSubmitted is true";
+        assert allowNewGame == false : "allowNewGame is true";
+        assert hasNewGameStarted == false : "hasNewGameStarted is true";
+        assert displayAnswer == false : "displayAnswer is true";
     }
         
     // Getter & Setters
-    public int getCurrentGuessTry() {return currentGuessTry;}
-    public void setCurrentGuessTry(int currentGuessTry) {this.currentGuessTry = currentGuessTry;}
-    public boolean allowGameRestart() {return allowGameRestart;}
-    public void setAllowGameRestart(boolean aEnableGameRestart) {this.allowGameRestart = aEnableGameRestart;}
-    public boolean hasGameRestarted() {return hasGameRestarted;}
-    public void setHasGameRestarted(boolean aHasGameRestarted) {this.hasGameRestarted = aHasGameRestarted;}
-    public boolean isWordNotInList() {return wordNotInList;}
-    public void setWordNotInList(boolean aWordNotInList) {this.wordNotInList = aWordNotInList;}
-    public boolean isShowAnswer() {return showAnswer;}
-    public void setShowAnswer(boolean aShowAnswer) {this.showAnswer = aShowAnswer;}
-    public boolean alwaysShowAnswer() {return alwaysShowAnswer;}
-    public void setAlwaysShowAnswer(boolean alwaysShowAnswer) {this.alwaysShowAnswer = alwaysShowAnswer;}
+    public boolean alwaysShowAnswer() {return alwaysDisplayAnswer;}
     public boolean allowOnlyWordListGuesses() {return allowOnlyWordListGuesses;}
-    public boolean showAnwser() {return showAnswer;}
-    public boolean selectRandomGuessWord() {return selectRandomGuessWord;}
+    public void setAllowOnlyWordListGuesses(boolean con){this.allowOnlyWordListGuesses = con;}
+    public boolean displayAnwser() {return displayAnswer;}
+    public int getCurrentGuessTry() {return currentGuessTry;}
+    public boolean allowNewGame() {return allowNewGame;}
+    public boolean hasNewGameStarted() {return hasNewGameStarted;}
+    public boolean isWordNotInList() {return wordNotInList;}
+    public boolean isShowAnswer() {return displayAnswer;}
     public String getAnswer() {return answer;}
-    public boolean getPlayerHasWon() {return playerHasWon;}
-    public void setPlayerHasWon(boolean aPlayerHasWon) {this.playerHasWon = aPlayerHasWon;}
+    public boolean hasPlayerWon() {return hasPlayerWon;}
     public String getGuess() {return guess;}
-    /** @Return true if guess is 5 letters*/
-    public boolean setGuess(String guess) {
-        if(guess.length()==GUESS_LENGTH){this.guess = guess; return true;}
-        else return false;   
+    /**
+     * @pre. invariant must be met
+     */
+    public void setGuess(String guess) {
+        assert invariant() : "invariant must be true initially";
+        this.guess = guess;
     }
     public boolean isGuessSubmitted() {return isGuessSubmitted;}
-    public void setIsGuessSubmitted(boolean aIsGuessSubmitted) {isGuessSubmitted = aIsGuessSubmitted;}
+    public void setIsGuessSubmitted(boolean isGuessSubmitted) {this.isGuessSubmitted = isGuessSubmitted;}
     public int getGuessStateColor(int index) {return guessStateColors[index];}
-    public void setGuessStateColor(int index, int state) {
-        assert state >= NO_STATE && state <= YELLOW_STATE:
-                "PreCon: Enter States from NO_STATE - YELLOW_STATE";
-        this.guessStateColors[index] = state;}
     public HashMap<Character,Integer> getAvailableLetters() {return availableLetters;}
     
     // Conditions
     public boolean isGuessComplete (){
-        return getGuess().length() == GUESS_LENGTH;
+        return guess.length() == MAX_GUESS_LENGTH;
     }
     public boolean playerHasTriesLeft(){
-        return getCurrentGuessTry() != MAX_GUESSES;
+        return currentGuessTry != MAX_GUESSES;
     }
     
     // Methods
-    public void modifyGuess(String keyText, boolean isAddToGuess){
+   
+    /**
+     * @pre. keyText length needs to be 1
+     * @post. guess length needs to be modified with 
+     * correct value and meet invariant
+     */
+    public void addToGuess(String keyText){
+        assert keyText != null : "keyText must exist";
+        assert keyText.length() == 1 : "keyText length needs to be 1";
+        assert invariant() : "invariant must be true initially";
+        String oldGuess = guess;
+        
         keyText = keyText.toLowerCase();
-        if (isAddToGuess)
-            guess += keyText;
-        else if (!isAddToGuess)
-            guess = removeLastChar(guess);
+        guess += keyText;
         setChanged();
         notifyObservers();
+        
+        assert !guess.equals(oldGuess): "guess not modified";
+        assert guess.equals(oldGuess+keyText) : "guess has been assigned wrong value";
+        assert invariant() : "invariant must be maintained";
     }
     
+    /**
+     * @post. guess length needs to at least 0, be modified and meet invariant
+     */
+    public void removeFromGuess(){
+        assert guess != null : "guess is null";
+        String oldGuess = guess;
+        
+        guess = removeLastChar(guess);
+        setChanged();
+        notifyObservers();
+        
+        assert guess.length() >= 0 : "guess is empty";
+        assert !guess.equals(oldGuess): "guess not modified";
+        assert guess.equals(removeLastChar(oldGuess)) : "guess has not been removed properly";
+        assert invariant() : "invariant must be maintained";
+    }
+    
+    /**
+     * @post. guess should be empty and 
+     * currentGuessTry increased by 1  
+     */
     public void submitGuess(){ 
+        int oldCurrentGuessTry = currentGuessTry;
+        setChanged();
         guess = guess.toLowerCase();
         wordNotInList = false;
         if (allowOnlyWordListGuesses){
             if (!isGuessInWordList(guess)){
                 wordNotInList = true;
-                setChanged();
                 notifyObservers();
                 return;
             }
         }
             
-        setIsGuessSubmitted(true);
+        isGuessSubmitted = true;
         colorLettersInGuess(guess);
 
         if (guess.equals(answer)){
-            playerHasWon = true;
+            hasPlayerWon = true;
         }
-
+        
         currentGuessTry++;
         guess = "";
-        
-        // Checks needs to be done after try is incremented
+       
+        // Below checks needs to be done after try is incremented
         if (currentGuessTry == MAX_GUESSES){
-            showAnswer = true;
+            displayAnswer = true;
         }
-        
+        // condition below not needed as guessTry is always 1,
+        // but prevents variable reassignment
         if (currentGuessTry == 1){
-            allowGameRestart = true;
+            allowNewGame = true;
         }
-        setChanged();
         notifyObservers();
+        isGuessSubmitted = false;
+        assert  isGuessSubmitted == false : "guess not submitted";
+        assert guess.length() == 0 : "guess is not empty";
+        assert currentGuessTry == oldCurrentGuessTry + 1 : 
+        "currentGuessTry not increased" ;
     }
     
-    public void resetGuessStateColors(){
-        Arrays.fill(guessStateColors, NO_STATE);   
-    }
-    
-    public boolean isGuessInWordList(String guess){
+    private boolean isGuessInWordList(String guess){
         return guessWordList.contains(guess) || targetWordsList.contains(guess); 
     }
     
-    // precondition guess needs to be lower case
-    public void colorLettersInGuess(String guess) {
-        guess = guess.toLowerCase();
-        boolean[] isAnswerCharChecked = new boolean[GUESS_LENGTH]; 
+    private void resetGuessStateColors(){
+        Arrays.fill(guessStateColors, NO_STATE);   
+    }
+    
+    private void colorLettersInGuess(String guess) {
+        boolean[] isAnswerCharChecked = new boolean[MAX_GUESS_LENGTH]; 
         Arrays.fill(isAnswerCharChecked, false);
         resetGuessStateColors();
         char guessChar;
         char answerChar;
         
         // Color Guess Letters Grey
-        for (int i = 0; i < GUESS_LENGTH; i++){
+        for (int i = 0; i < MAX_GUESS_LENGTH; i++){
              guessChar = guess.charAt(i);
              guessStateColors[i] = GREY_STATE;
              availableLetters.replace(guessChar, GREY_STATE);
         }
         // Color Guess Letters Green
-        for (int i = 0; i < GUESS_LENGTH; i++){
+        for (int i = 0; i < MAX_GUESS_LENGTH; i++){
             guessChar = guess.charAt(i);
             answerChar = getAnswer().charAt(i);
             if (guessChar == answerChar){
@@ -203,7 +250,7 @@ public class WModel extends Observable {
             }
         }
         // Color Guess Letters Yellow
-        for (int i = 0; i < GUESS_LENGTH; i++){
+        for (int i = 0; i < MAX_GUESS_LENGTH; i++){
             guessChar = guess.charAt(i);
             if (guessStateColors[i] != GREEN_STATE && 
                     isCharInAnswer(guessChar, isAnswerCharChecked)){
@@ -215,7 +262,7 @@ public class WModel extends Observable {
     }
     
     private boolean isCharInAnswer(char guessChar, boolean[] isAnswerCharChecked){
-        for (int j = 0; j < GUESS_LENGTH; j++){
+        for (int j = 0; j < MAX_GUESS_LENGTH; j++){
             if (guessChar == getAnswer().charAt(j) && isAnswerCharChecked[j] == false ){
                 isAnswerCharChecked[j] = true;
                 return true;
@@ -228,12 +275,12 @@ public class WModel extends Observable {
     private void initializeAvailableLetters() {
         // Put a-z lower case letters with NO_STATE in Hashmap
         availableLetters = new HashMap<>();
-        for (int asciiValue = 97; asciiValue <= 122; asciiValue++)
+        for (int asciiValue = LETTER_A_ASCII_VALUE; asciiValue <= LETTER_Z_ASCII_VALUE; asciiValue++)
             availableLetters.put((char)asciiValue, NO_STATE);
     }
     
     private String getRandomWord(){
-        if (!selectRandomGuessWord())
+        if (!selectRandomGuessWord)
             return targetWordsList.get(0);
         String word;
         Random rand = new Random(); 
@@ -245,6 +292,7 @@ public class WModel extends Observable {
         return word;
     }
     
+
     private static List<String> loadInFromFile(String filePath) {
        List<String> list = new ArrayList<>();
        try {
@@ -261,11 +309,10 @@ public class WModel extends Observable {
         catch (Exception e) {
             e.printStackTrace();  
         }
-        // do i need to check if arr is empty?
         return list;
     }
-
-    private static String removeLastChar(String s) {
+    
+    public static String removeLastChar(String s) {
         return (s == null || s.length() == 0)
           ? null 
           : (s.substring(0, s.length() - 1));
