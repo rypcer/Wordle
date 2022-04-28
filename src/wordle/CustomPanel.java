@@ -22,7 +22,7 @@ public abstract class CustomPanel extends JPanel {
     public final Color GREEN = new Color(122, 171, 104);
     public final Color YELLOW = new Color(199, 178, 96);
     
-    CustomPanel(WModel model, WController controller){
+    public CustomPanel(WModel model, WController controller){
 
         panelSize = super.getPreferredSize();
         this.model = model;

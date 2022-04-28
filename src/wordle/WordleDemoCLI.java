@@ -9,7 +9,7 @@ import java.util.Scanner;
 public class WordleDemoCLI {
     
     // Are initialized only once at start of execution
-    private static final WModel model = new WModel();
+    private static WModel model = new WModel();
     private static Scanner input = new Scanner(System.in);
     private static String guess;
     // Below used to display colored guess word in Console

@@ -35,11 +35,6 @@ public class WModel extends Observable {
     private final List<String> targetWordsList;
     private final List<String> guessWordList;
     
-    // 3 Flags
-    private boolean allowOnlyWordListGuesses; 
-    private boolean alwaysDisplayAnswer;
-    private boolean selectRandomGuessWord;
-    
     private String guess;
     private String answer;
     private int currentGuessTry;
@@ -49,14 +44,18 @@ public class WModel extends Observable {
     private boolean hasNewGameStarted;
     private boolean wordNotInList;
     private boolean displayAnswer;
-   
+    
+    // 3 Flags
+    private boolean allowOnlyWordListGuesses; 
+    private boolean alwaysDisplayAnswer;
+    private boolean selectRandomGuessWord;
       
     public WModel(){
         targetWordsList = loadInFromFile("src/wordle/data/common.txt");
         guessWordList = loadInFromFile("src/wordle/data/words.txt");
-        allowOnlyWordListGuesses = false;
+        allowOnlyWordListGuesses = true;
         alwaysDisplayAnswer = true;
-        selectRandomGuessWord = true;
+        selectRandomGuessWord = false;
         wordNotInList = false;
         guessStateColors = new int[MAX_GUESS_LENGTH];
         initGame();
@@ -104,30 +103,32 @@ public class WModel extends Observable {
     // Getter & Setters
     public boolean alwaysShowAnswer() {return alwaysDisplayAnswer;}
     public boolean allowOnlyWordListGuesses() {return allowOnlyWordListGuesses;}
-    public void setAllowOnlyWordListGuesses(boolean con){this.allowOnlyWordListGuesses = con;}
+    public boolean isGuessSubmitted() {return isGuessSubmitted;}
     public boolean displayAnwser() {return displayAnswer;}
-    public int getCurrentGuessTry() {return currentGuessTry;}
+    public boolean hasPlayerWon() {return hasPlayerWon;}
     public boolean allowNewGame() {return allowNewGame;}
     public boolean hasNewGameStarted() {return hasNewGameStarted;}
     public boolean isWordNotInList() {return wordNotInList;}
     public boolean isShowAnswer() {return displayAnswer;}
     public String getAnswer() {return answer;}
-    public boolean hasPlayerWon() {return hasPlayerWon;}
     public String getGuess() {return guess;}
+    public int getGuessStateColor(int index) {return guessStateColors[index];}
+    public int getCurrentGuessTry() {return currentGuessTry;}
+    public HashMap<Character,Integer> getAvailableLetters() {return availableLetters;}
+    
+    public void setAllowOnlyWordListGuesses(boolean con){this.allowOnlyWordListGuesses = con;}
+    public void setIsGuessSubmitted(boolean isGuessSubmitted) {this.isGuessSubmitted = isGuessSubmitted;}
     /**
-     * @pre. invariant must be met
-     */
+    * @pre. invariant must be met
+    */
     public void setGuess(String guess) {
         assert invariant() : "invariant must be true initially";
         this.guess = guess;
     }
-    public boolean isGuessSubmitted() {return isGuessSubmitted;}
-    public void setIsGuessSubmitted(boolean isGuessSubmitted) {this.isGuessSubmitted = isGuessSubmitted;}
-    public int getGuessStateColor(int index) {return guessStateColors[index];}
-    public HashMap<Character,Integer> getAvailableLetters() {return availableLetters;}
+   
     
     // Conditions
-    public boolean isGuessComplete (){
+    public boolean isGuessComplete(){
         return guess.length() == MAX_GUESS_LENGTH;
     }
     public boolean playerHasTriesLeft(){
@@ -312,7 +313,7 @@ public class WModel extends Observable {
         return list;
     }
     
-    public static String removeLastChar(String s) {
+    private static String removeLastChar(String s) {
         return (s == null || s.length() == 0)
           ? null 
           : (s.substring(0, s.length() - 1));
