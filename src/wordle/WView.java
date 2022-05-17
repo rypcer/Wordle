@@ -25,7 +25,7 @@ public class WView implements Observer {
     private final WController controller;
     
     private JFrame frame;
-    //private CustomPanel optionsPanel;
+    private CustomPanel optionsPanel;
     private CustomPanel keyboardPanel;
     private CustomPanel guessPanel;
     
@@ -50,8 +50,8 @@ public class WView implements Observer {
         contentPane.add(guessPanel);
         keyboardPanel = new KeyboardPanel(model, controller);
         contentPane.add(keyboardPanel);
-        //optionsPanel = new OptionsPanel(model, controller);
-        //contentPane.add(optionsPanel);
+        optionsPanel = new OptionsPanel(model, controller);
+        contentPane.add(optionsPanel);
         
         frame.pack(); 
         frame.setLayout(null);
@@ -63,7 +63,7 @@ public class WView implements Observer {
     public void update(java.util.Observable o, Object arg){
         guessPanel.update();
         keyboardPanel.update();
-        //optionsPanel.update();
+        optionsPanel.update();
         frame.repaint();
     }
 }
