@@ -4,5 +4,5 @@ Both CLI and GUI version have been developed, this is to make use of the model i
 eg writing input/output or input checking again for CLI version.
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/64012474/168835793-b0e6aae9-66e9-4cfb-b8b4-f4d9ceddf803.png"/>
+<img width ="320"src="https://user-images.githubusercontent.com/64012474/168835793-b0e6aae9-66e9-4cfb-b8b4-f4d9ceddf803.png"/>
 </p>
